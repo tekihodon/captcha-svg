@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  captcha:
+    image: tekihodon/captcha-svg:latest
+    container_name: captcha-svg
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
