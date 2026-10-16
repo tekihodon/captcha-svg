@@ -1,0 +1,27 @@
+<form method="POST" action="/register" id="form-test">
+  <!-- Trường thông thường -->
+  <label>Tên đăng nhập</label>
+  <input type="text" name="username" placeholder="Nhập tên..." required>
+
+  <!-- Tích hợp Captcha Module (tương tự Altcha) -->
+  <!-- Chỉ cần 1 thẻ <captcha-widget> -->
+  <captcha-widget
+    endpoint="http://localhost:3000"
+    field-name="userAnswer"
+    captcha-id-field="captchaId"
+    challenge-api="/api/captcha/new"
+    verify-api="/api/register"
+  ></captcha-widget>
+
+  <button type="submit">Hoàn tất Đăng Ký</button>
+</form>
+
+<!-- Script tích hợp -->
+<script type="module">
+  // Nếu bạn muốn tự nhúng widget từ module:
+  // import { CaptchaSVGWidget } from 'https://your-cdn.com/captcha-widget.js';
+  // Hoặc dùng thẻ <script> thông thường:
+  document.querySelector('captcha-widget').addEventListener('verified', (e) => {
+    console.log('Captcha verified:', e.detail);
+  });
+</script>

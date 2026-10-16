@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test MIT Anti-Phone Farm Captcha</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #e8ecf1; color: #1e293b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 1px solid #d1d5db; width: 380px; }
+        h2 { margin-top: 0; color: #38bdf8; font-size: 20px; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #475569; }
+        input { width: 100%; padding: 10px; border: 1px solid #9ca3af; background: #ffffff; color: #1e293b; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 11px; background: #0ea5e9; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #0284c7; }
+        .captcha-box { background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; text-align: center; margin-bottom: 10px; }
+        #promptText { color: #0f172a; font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; }
+        .refresh-btn { background: none; border: none; color: #0369a1; font-size: 12px; cursor: pointer; padding: 0; margin-top: 5px; text-decoration: underline; width: auto; }
+        #msg { margin-top: 15px; text-align: center; font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Đăng Ký Tài Khoản Test</h2>
+        <form id="regForm">
+            <div class="form-group">
+                <label>Tên đăng nhập</label>
+                <input type="text" id="username" required placeholder="Nhập tên tài khoản...">
+            </div>
+            <div class="form-group">
+                <label>Xác thực chống Phone Farm (MIT SVG)</label>
+                <div class="captcha-box">
+                    <span id="promptText">Đang tải câu đố...</span>
+                    <div id="svgContainer"></div>
+                    <button type="button" class="refresh-btn" onclick="loadCaptcha()">🔄 Đổi câu đố khác</button>
+                </div>
+                <input type="text" id="userAnswer" required placeholder="Nhập câu trả lời vào đây..." autocomplete="off">
+                <input type="hidden" id="captchaId">
+            </div>
+            <button type="submit">Hoàn tất Đăng Ký</button>
+        </form>
+        <div id="msg"></div>
+    </div>
+
+    <script>
+        async function loadCaptcha() {
+            document.getElementById('userAnswer').value = '';
+            const res = await fetch('/api/captcha/new');
+            const data = await res.json();
+            document.getElementById('captchaId').value = data.captchaId;
+            document.getElementById('promptText').innerText = data.prompt;
+            document.getElementById('svgContainer').innerHTML = data.svg;
+        }
+        document.getElementById('regForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const captchaId = document.getElementById('captchaId').value;
+            const userAnswer = document.getElementById('userAnswer').value;
+            const msg = document.getElementById('msg');
+            const res = await fetch('/api/register', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, captchaId, userAnswer })
+            });
+            const result = await res.json();
+            if (result.success) {
+                msg.style.color = '#4ade80'; msg.innerText = result.message;
+                setTimeout(loadCaptcha, 2000);
+            } else {
+                msg.style.color = '#f87171'; msg.innerText = result.message;
+                loadCaptcha();
+            }
+        });
+        loadCaptcha();
+    </script>
+</body>
+</html>
